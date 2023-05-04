@@ -94,11 +94,11 @@ public class DeathLayer extends WorldLayer {
     @Override
     public @NonNull Collection<@NonNull Marker<@NonNull ?>> getMarkers() {
         return this.spots.values().stream().map(spot -> {
-            Icon icon = Marker.icon(KEY + "_" + spot.getName(), spot.getPoint(), KEY, this.config.ICON_SIZE)
+            Icon icon = Marker.icon(KEY + "_" + spot.getName(), spot.getPoint(), KEY + "marker", this.config.ICON_SIZE)
                     .setAnchor(config.ICON_ANCHOR)
                     .setRotationAngle(config.ICON_ROTATION_ANGLE)
                     .setRotationOrigin(config.ICON_ROTATION_ORIGIN)
-                    .setShadow("shadow")
+                    .setShadow(KEY + "shadow")
                     .setShadowSize(config.ICON_SHADOW_SIZE)
                     .setShadowAnchor(config.ICON_SHADOW_ANCHOR);
             Options.Builder builder = this.options.asBuilder();

@@ -1,0 +1,85 @@
+import com.modrinth.minotaur.TaskModrinthUpload
+
+plugins {
+    id 'java'
+    id 'com.modrinth.minotaur' version '2.+'
+}
+
+defaultTasks 'build'
+
+def buildNum = System.getenv('GITHUB_RUN_NUMBER') ?: 'SNAPSHOT'
+project.group = 'net.pl3x.map.deathspots'
+project.version = "$minecraftVersion-$buildNum"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    exclusiveContent {
+        forRepository { maven { url = 'https://api.modrinth.com/maven/' } }
+        filter { includeGroup 'maven.modrinth' }
+    }
+}
+
+dependencies {
+    compileOnly("io.papermc.paper:paper-api:$bukkitVersion") {
+        exclude group: 'org.yaml', module: 'snakeyaml'
+    }
+    compileOnly "maven.modrinth:pl3xmap:$pl3xmapVersion"
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.release.set(17)
+}
+
+javadoc {
+    options.encoding = 'UTF-8'
+}
+
+processResources {
+    filteringCharset = 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand(
+                'name': rootProject.name,
+                'group': project.group,
+                'version': project.version,
+                'authors': authors,
+                'description': project.properties['description'],
+                'website': website
+        )
+    }
+}
+
+modrinth {
+    autoAddDependsOn = false
+    token = System.getenv('MODRINTH_TOKEN')
+    projectId = 'deathspots'
+    versionName = "${project.version}"
+    versionNumber = "${project.version}"
+    versionType = 'release'
+    uploadFile = rootProject.layout.buildDirectory.file("libs/${rootProject.name}-${project.version}.jar").get()
+    gameVersions.addAll(["${minecraftVersion}"])
+    loaders.addAll(['bukkit', 'paper', 'purpur', 'spigot'])
+    changelog = System.getenv('COMMIT_MESSAGE')
+    dependencies {
+        required.project "pl3xmap"
+    }
+}
+
+class ModrinthNoBuildPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        project.tasks.register('modrinth_nobuild', TaskModrinthUpload.class, task -> {
+            task.setGroup('publishing')
+            task.setDescription('Upload project to Modrinth')
+            //task.dependsOn(tasks.named('assemble'))
+            //task.mustRunAfter(tasks.named('build'))
+        })
+    }
+}
+
+apply plugin: ModrinthNoBuildPlugin

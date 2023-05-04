@@ -1,8 +1,10 @@
-name: Pl3xMap-DeathSpots
-version: ${project.version}
-main: net.pl3x.map.deathspots.DeathSpots
-api-version: 1.16
-authors: [ BillyGalbreath ]
-description: DeathSpots addon for Pl3xMap
+name: "${name}"
+main: "${group}.DeathSpots"
+version: "${version}"
+api-version: "1.19"
+load: "POSTWORLD"
+authors: ${authors}
+description: "${description}"
+website: "${website}"
 softdepend:
   - Pl3xMap

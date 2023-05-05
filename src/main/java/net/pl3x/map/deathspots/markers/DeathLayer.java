@@ -23,7 +23,6 @@
  */
 package net.pl3x.map.deathspots.markers;
 
-import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import libs.org.checkerframework.checker.nullness.qual.NonNull;
@@ -35,9 +34,7 @@ import net.pl3x.map.core.registry.Registry;
 import net.pl3x.map.deathspots.DeathSpots;
 import net.pl3x.map.deathspots.configuration.WorldConfig;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 
 public class DeathLayer extends WorldLayer {
     public static final String KEY = "deathspots";
@@ -82,13 +79,6 @@ public class DeathLayer extends WorldLayer {
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(DeathSpots.getPlugin(DeathSpots.class), () ->
                 this.spots.values().removeIf(next -> next.expired(config.SECONDS_TO_SHOW)), 20L, 20L);
-    }
-
-    @EventHandler
-    public void onRemove(EntityRemoveFromWorldEvent event) {
-        if (event.getEntityType() == EntityType.ENDER_SIGNAL) {
-            Thread.dumpStack();
-        }
     }
 
     @Override

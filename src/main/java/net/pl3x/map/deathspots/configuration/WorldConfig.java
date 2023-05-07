@@ -27,7 +27,6 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Map;
 import libs.org.simpleyaml.configuration.ConfigurationSection;
-import libs.org.simpleyaml.configuration.MemorySection;
 import net.pl3x.map.core.configuration.AbstractConfig;
 import net.pl3x.map.core.markers.Point;
 import net.pl3x.map.core.markers.Vector;
@@ -249,15 +248,27 @@ public class WorldConfig extends AbstractConfig {
             case "marker.icon.anchor":
             case "marker.icon.shadow-size":
             case "marker.icon.shadow-anchor":
-                ConfigurationSection vector = (MemorySection) value;
-                return Vector.of(vector.getDouble("x"), vector.getDouble("z"));
+                if (value instanceof ConfigurationSection section) {
+                    return Vector.of(section.getDouble("x"), section.getDouble("z"));
+                } else if (value instanceof Map<?, ?>) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Double> vector = (Map<String, Double>) value;
+                    return Vector.of(vector.get("x"), vector.get("z"));
+                }
+                break;
             case "marker.tooltip.offset":
             case "marker.popup.offset":
             case "marker.popup.auto-pan.padding.all":
             case "marker.popup.auto-pan.padding.top-left":
             case "marker.popup.auto-pan.padding.bottom-right":
-                ConfigurationSection point = (MemorySection) value;
-                return Point.of(point.getInt("x"), point.getInt("z"));
+                if (value instanceof ConfigurationSection section) {
+                    return Point.of(section.getInt("x"), section.getInt("z"));
+                } else if (value instanceof Map<?, ?>) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Integer> point = (Map<String, Integer>) value;
+                    return Point.of(point.get("x"), point.get("z"));
+                }
+                break;
             case "marker.tooltip.direction":
                 return Tooltip.Direction.valueOf(String.valueOf(value).toUpperCase(Locale.ROOT));
         }

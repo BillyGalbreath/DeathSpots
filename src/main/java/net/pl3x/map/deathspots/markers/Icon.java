@@ -7,6 +7,7 @@ import javax.imageio.ImageIO;
 import net.pl3x.map.core.Pl3xMap;
 import net.pl3x.map.core.image.IconImage;
 import net.pl3x.map.deathspots.DeathSpots;
+import org.jetbrains.annotations.NotNull;
 
 public enum Icon {
     MARKER, SHADOW;
@@ -19,7 +20,7 @@ public enum Icon {
         this.key = String.format("%s_%s", DeathLayer.KEY, this.name);
     }
 
-    public String getKey() {
+    public @NotNull String getKey() {
         return this.key;
     }
 

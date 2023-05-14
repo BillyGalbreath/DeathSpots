@@ -23,7 +23,6 @@
  */
 package net.pl3x.map.deathspots.listener;
 
-import libs.org.checkerframework.checker.nullness.qual.NonNull;
 import net.pl3x.map.core.Pl3xMap;
 import net.pl3x.map.core.event.EventHandler;
 import net.pl3x.map.core.event.EventListener;
@@ -41,6 +40,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.jetbrains.annotations.NotNull;
 
 public class BukkitListener implements EventListener, Listener {
     public static final Registry<DeathSpot> deathSpots = new Registry<>();
@@ -50,7 +50,7 @@ public class BukkitListener implements EventListener, Listener {
     }
 
     @org.bukkit.event.EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerDeath(PlayerDeathEvent event) {
+    public void onPlayerDeath(@NotNull PlayerDeathEvent event) {
         Player player = event.getEntity();
 
         World world = Pl3xMap.api().getWorldRegistry().get(player.getWorld().getName());
@@ -67,30 +67,30 @@ public class BukkitListener implements EventListener, Listener {
     }
 
     @EventHandler
-    public void onPl3xMapEnabled(@NonNull Pl3xMapEnabledEvent event) {
+    public void onPl3xMapEnabled(@NotNull Pl3xMapEnabledEvent event) {
         Icon.register();
     }
 
     @EventHandler
-    public void onServerLoaded(@NonNull ServerLoadedEvent event) {
+    public void onServerLoaded(@NotNull ServerLoadedEvent event) {
         Icon.register();
         Pl3xMap.api().getWorldRegistry().forEach(this::registerWorld);
     }
 
     @EventHandler
-    public void onWorldLoaded(@NonNull WorldLoadedEvent event) {
+    public void onWorldLoaded(@NotNull WorldLoadedEvent event) {
         registerWorld(event.getWorld());
     }
 
     @EventHandler
-    public void onWorldUnloaded(@NonNull WorldUnloadedEvent event) {
+    public void onWorldUnloaded(@NotNull WorldUnloadedEvent event) {
         try {
             event.getWorld().getLayerRegistry().unregister(DeathLayer.KEY);
         } catch (Throwable ignore) {
         }
     }
 
-    private void registerWorld(@NonNull World world) {
+    private void registerWorld(@NotNull World world) {
         world.getLayerRegistry().register(new DeathLayer(new WorldConfig(world)));
     }
 }

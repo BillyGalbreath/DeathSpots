@@ -29,13 +29,15 @@ import net.pl3x.map.core.Keyed;
 import net.pl3x.map.core.markers.Point;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class DeathSpot extends Keyed {
     private final UUID uuid;
     private final Point point;
     private final long time;
 
-    public DeathSpot(Player player) {
+    public DeathSpot(@NotNull Player player) {
         super(player.getName());
 
         Location loc = player.getLocation();
@@ -44,15 +46,15 @@ public class DeathSpot extends Keyed {
         this.time = System.currentTimeMillis();
     }
 
-    public UUID getUUID() {
+    public @NotNull UUID getUUID() {
         return this.uuid;
     }
 
-    public String getName() {
+    public @NotNull String getName() {
         return getKey();
     }
 
-    public Point getPoint() {
+    public @NotNull Point getPoint() {
         return this.point;
     }
 
@@ -65,7 +67,7 @@ public class DeathSpot extends Keyed {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (o == this) {
             return true;
         }
@@ -87,7 +89,7 @@ public class DeathSpot extends Keyed {
     }
 
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return "DeathSpot{"
                 + "uuid=" + getUUID()
                 + ",name=" + getName()

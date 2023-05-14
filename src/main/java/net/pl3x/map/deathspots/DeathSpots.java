@@ -23,13 +23,7 @@
  */
 package net.pl3x.map.deathspots;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.nio.file.Path;
-import javax.imageio.ImageIO;
 import net.pl3x.map.core.Pl3xMap;
-import net.pl3x.map.core.image.IconImage;
-import net.pl3x.map.core.util.FileUtil;
 import net.pl3x.map.deathspots.listener.BukkitListener;
 import net.pl3x.map.deathspots.markers.DeathLayer;
 import org.bukkit.Bukkit;
@@ -44,9 +38,6 @@ public final class DeathSpots extends JavaPlugin {
             return;
         }
 
-        registerIcon("marker");
-        registerIcon("shadow");
-
         getServer().getPluginManager().registerEvents(new BukkitListener(), this);
     }
 
@@ -60,17 +51,5 @@ public final class DeathSpots extends JavaPlugin {
             } catch (Throwable ignore) {
             }
         });
-    }
-
-    private void registerIcon(String name) {
-        try {
-            Path dir = getDataFolder().toPath();
-            FileUtil.extractFile(getClass(), name + ".png", dir, false);
-            BufferedImage image = ImageIO.read(dir.resolve(name + ".png").toFile());
-            IconImage icon = new IconImage(DeathLayer.KEY + name, image, "png");
-            Pl3xMap.api().getIconRegistry().register(icon);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

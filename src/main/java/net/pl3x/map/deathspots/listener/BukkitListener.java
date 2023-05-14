@@ -27,18 +27,24 @@ import libs.org.checkerframework.checker.nullness.qual.NonNull;
 import net.pl3x.map.core.Pl3xMap;
 import net.pl3x.map.core.event.EventHandler;
 import net.pl3x.map.core.event.EventListener;
+import net.pl3x.map.core.event.server.Pl3xMapEnabledEvent;
 import net.pl3x.map.core.event.server.ServerLoadedEvent;
 import net.pl3x.map.core.event.world.WorldLoadedEvent;
 import net.pl3x.map.core.event.world.WorldUnloadedEvent;
+import net.pl3x.map.core.registry.Registry;
 import net.pl3x.map.core.world.World;
 import net.pl3x.map.deathspots.configuration.WorldConfig;
 import net.pl3x.map.deathspots.markers.DeathLayer;
+import net.pl3x.map.deathspots.markers.DeathSpot;
+import net.pl3x.map.deathspots.markers.Icon;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 public class BukkitListener implements EventListener, Listener {
+    public static final Registry<DeathSpot> deathSpots = new Registry<>();
+
     public BukkitListener() {
         Pl3xMap.api().getEventRegistry().register(this);
     }
@@ -57,11 +63,17 @@ public class BukkitListener implements EventListener, Listener {
             return;
         }
 
-        layer.addDeath(player);
+        deathSpots.register(new DeathSpot(player));
+    }
+
+    @EventHandler
+    public void onPl3xMapEnabled(@NonNull Pl3xMapEnabledEvent event) {
+        Icon.register();
     }
 
     @EventHandler
     public void onServerLoaded(@NonNull ServerLoadedEvent event) {
+        Icon.register();
         Pl3xMap.api().getWorldRegistry().forEach(this::registerWorld);
     }
 

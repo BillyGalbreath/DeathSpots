@@ -25,16 +25,15 @@ package net.pl3x.map.deathspots.markers;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
-import libs.org.checkerframework.checker.nullness.qual.NonNull;
 import net.pl3x.map.core.markers.layer.WorldLayer;
 import net.pl3x.map.core.markers.marker.Icon;
 import net.pl3x.map.core.markers.marker.Marker;
 import net.pl3x.map.core.markers.option.Options;
-import net.pl3x.map.core.registry.Registry;
 import net.pl3x.map.deathspots.DeathSpots;
 import net.pl3x.map.deathspots.configuration.WorldConfig;
+import net.pl3x.map.deathspots.listener.BukkitListener;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class DeathLayer extends WorldLayer {
     public static final String KEY = "deathspots";
@@ -42,9 +41,7 @@ public class DeathLayer extends WorldLayer {
     private final WorldConfig config;
     private final Options options;
 
-    private final Registry<DeathSpot> spots = new Registry<>();
-
-    public DeathLayer(@NonNull WorldConfig config) {
+    public DeathLayer(@NotNull WorldConfig config) {
         super(KEY, config.getWorld(), () -> config.LAYER_LABEL);
         this.config = config;
 
@@ -78,17 +75,19 @@ public class DeathLayer extends WorldLayer {
                 .build();
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(DeathSpots.getPlugin(DeathSpots.class), () ->
-                this.spots.values().removeIf(next -> next.expired(config.SECONDS_TO_SHOW)), 20L, 20L);
+                BukkitListener.deathSpots.values().removeIf(next -> next.expired(config.SECONDS_TO_SHOW)), 20L, 20L);
     }
 
     @Override
-    public @NonNull Collection<@NonNull Marker<@NonNull ?>> getMarkers() {
-        return this.spots.values().stream().map(spot -> {
-            Icon icon = Marker.icon(KEY + "_" + spot.getName(), spot.getPoint(), KEY + "marker", this.config.ICON_SIZE)
+    public @NotNull Collection<Marker<?>> getMarkers() {
+        String marker = net.pl3x.map.deathspots.markers.Icon.MARKER.getKey();
+        String shadow = net.pl3x.map.deathspots.markers.Icon.SHADOW.getKey();
+        return BukkitListener.deathSpots.values().stream().map(spot -> {
+            Icon icon = Marker.icon(KEY + "_" + spot.getName(), spot.getPoint(), marker, this.config.ICON_SIZE)
                     .setAnchor(config.ICON_ANCHOR)
                     .setRotationAngle(config.ICON_ROTATION_ANGLE)
                     .setRotationOrigin(config.ICON_ROTATION_ORIGIN)
-                    .setShadow(KEY + "shadow")
+                    .setShadow(shadow)
                     .setShadowSize(config.ICON_SHADOW_SIZE)
                     .setShadowAnchor(config.ICON_SHADOW_ANCHOR);
             Options.Builder builder = this.options.asBuilder();
@@ -100,9 +99,5 @@ public class DeathLayer extends WorldLayer {
             }
             return icon.setOptions(builder.build());
         }).collect(Collectors.toList());
-    }
-
-    public void addDeath(Player player) {
-        this.spots.register(new DeathSpot(player));
     }
 }

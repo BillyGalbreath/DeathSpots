@@ -1,10 +1,15 @@
 name: "${name}"
 main: "${group}.DeathSpots"
 version: "${version}"
-api-version: "1.19"
+api-version: "1.20"
 load: "POSTWORLD"
 authors: ${authors}
 description: "${description}"
 website: "${website}"
 softdepend:
   - Pl3xMap
+
+permissions:
+  deathmap.on.death:
+    description: Give a deathmap when player dies
+    default: true

@@ -23,74 +23,62 @@
  */
 package net.pl3x.map.deathspots.listener;
 
-import net.pl3x.map.core.Pl3xMap;
-import net.pl3x.map.core.event.EventHandler;
-import net.pl3x.map.core.event.EventListener;
-import net.pl3x.map.core.event.server.Pl3xMapEnabledEvent;
-import net.pl3x.map.core.event.server.ServerLoadedEvent;
-import net.pl3x.map.core.event.world.WorldLoadedEvent;
-import net.pl3x.map.core.event.world.WorldUnloadedEvent;
-import net.pl3x.map.core.registry.Registry;
-import net.pl3x.map.core.world.World;
-import net.pl3x.map.deathspots.configuration.WorldConfig;
-import net.pl3x.map.deathspots.markers.DeathLayer;
-import net.pl3x.map.deathspots.markers.DeathSpot;
-import net.pl3x.map.deathspots.markers.Icon;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapDecoration;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import net.pl3x.map.deathspots.DeathSpots;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.map.MapView;
 import org.jetbrains.annotations.NotNull;
 
-public class BukkitListener implements EventListener, Listener {
-    public static final Registry<DeathSpot> deathSpots = new Registry<>();
+public class BukkitListener implements Listener {
+    private final DeathSpots plugin;
 
-    public BukkitListener() {
-        Pl3xMap.api().getEventRegistry().register(this);
+    public BukkitListener(DeathSpots plugin) {
+        this.plugin = plugin;
     }
 
-    @org.bukkit.event.EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerDeath(@NotNull PlayerDeathEvent event) {
         Player player = event.getEntity();
-
-        World world = Pl3xMap.api().getWorldRegistry().get(player.getWorld().getName());
-        if (world == null || !world.isEnabled()) {
-            return;
-        }
-
-        DeathLayer layer = (DeathLayer) world.getLayerRegistry().get(DeathLayer.KEY);
-        if (layer == null) {
-            return;
-        }
-
-        deathSpots.register(new DeathSpot(player));
-    }
-
-    @EventHandler
-    public void onPl3xMapEnabled(@NotNull Pl3xMapEnabledEvent event) {
-        Icon.register();
-    }
-
-    @EventHandler
-    public void onServerLoaded(@NotNull ServerLoadedEvent event) {
-        Icon.register();
-        Pl3xMap.api().getWorldRegistry().forEach(this::registerWorld);
-    }
-
-    @EventHandler
-    public void onWorldLoaded(@NotNull WorldLoadedEvent event) {
-        registerWorld(event.getWorld());
-    }
-
-    @EventHandler
-    public void onWorldUnloaded(@NotNull WorldUnloadedEvent event) {
-        try {
-            event.getWorld().getLayerRegistry().unregister(DeathLayer.KEY);
-        } catch (Throwable ignore) {
+        if (player.hasPermission("deathmap.on.death")) {
+            ItemStack deathMap = getDeathMap(player);
+            Bukkit.getScheduler().runTaskLater(this.plugin, () ->
+                    player.getInventory().addItem(deathMap), 1L);
         }
     }
 
-    private void registerWorld(@NotNull World world) {
-        world.getLayerRegistry().register(new DeathLayer(new WorldConfig(world)));
+    private ItemStack getDeathMap(Player player) {
+        Location loc = player.getLocation();
+        BlockPos pos = new BlockPos(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        ServerLevel level = ((CraftWorld) loc.getWorld()).getHandle();
+
+        net.minecraft.world.item.ItemStack nmsMap = MapItem.create(level, pos.getX(), pos.getZ(), (byte) MapView.Scale.CLOSEST.ordinal(), true, true);
+        MapItem.renderBiomePreviewMap(level, nmsMap);
+        MapItemSavedData.addTargetDecoration(nmsMap, pos, "Death", MapDecoration.Type.RED_X);
+
+        CompoundTag displayTag = nmsMap.getOrCreateTagElement("display");
+        ListTag lore = new ListTag();
+        lore.add(StringTag.valueOf(Component.Serializer.toJson(Component.literal("World: " + loc.getWorld().getName()).withStyle(ChatFormatting.GRAY))));
+        displayTag.put("Lore", lore);
+        displayTag.putString("Name", Component.Serializer.toJson(Component.literal("Death Map").withStyle(ChatFormatting.RED)));
+
+        return CraftItemStack.asCraftMirror(nmsMap);
     }
 }

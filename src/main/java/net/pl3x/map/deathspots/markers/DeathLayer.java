@@ -31,7 +31,7 @@ import net.pl3x.map.core.markers.marker.Marker;
 import net.pl3x.map.core.markers.option.Options;
 import net.pl3x.map.deathspots.DeathSpots;
 import net.pl3x.map.deathspots.configuration.WorldConfig;
-import net.pl3x.map.deathspots.listener.BukkitListener;
+import net.pl3x.map.deathspots.listener.Pl3xMapListener;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
@@ -75,14 +75,14 @@ public class DeathLayer extends WorldLayer {
                 .build();
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(DeathSpots.getPlugin(DeathSpots.class), () ->
-                BukkitListener.deathSpots.values().removeIf(next -> next.expired(config.SECONDS_TO_SHOW)), 20L, 20L);
+                Pl3xMapListener.deathSpots.values().removeIf(next -> next.expired(config.SECONDS_TO_SHOW)), 20L, 20L);
     }
 
     @Override
     public @NotNull Collection<Marker<?>> getMarkers() {
         String marker = net.pl3x.map.deathspots.markers.Icon.MARKER.getKey();
         String shadow = net.pl3x.map.deathspots.markers.Icon.SHADOW.getKey();
-        return BukkitListener.deathSpots.values().stream().map(spot -> {
+        return Pl3xMapListener.deathSpots.values().stream().map(spot -> {
             Icon icon = Marker.icon(KEY + "_" + spot.getName(), spot.getPoint(), marker, this.config.ICON_SIZE)
                     .setAnchor(config.ICON_ANCHOR)
                     .setRotationAngle(config.ICON_ROTATION_ANGLE)

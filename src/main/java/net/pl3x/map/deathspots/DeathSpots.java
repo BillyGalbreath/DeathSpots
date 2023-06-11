@@ -23,33 +23,33 @@
  */
 package net.pl3x.map.deathspots;
 
-import net.pl3x.map.core.Pl3xMap;
 import net.pl3x.map.deathspots.listener.BukkitListener;
-import net.pl3x.map.deathspots.markers.DeathLayer;
+import net.pl3x.map.deathspots.listener.Pl3xMapListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class DeathSpots extends JavaPlugin {
+    private boolean hasHook;
+
     @Override
     public void onEnable() {
-        if (!getServer().getPluginManager().isPluginEnabled("Pl3xMap")) {
-            getLogger().severe("Pl3xMap not found!");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
+        getServer().getPluginManager().registerEvents(new BukkitListener(this), this);
 
-        getServer().getPluginManager().registerEvents(new BukkitListener(), this);
+        if (getServer().getPluginManager().isPluginEnabled("Pl3xMap")) {
+            getLogger().info("Found Pl3xMap. Hooking into plugin.");
+            getServer().getPluginManager().registerEvents(new Pl3xMapListener(), this);
+            this.hasHook = true;
+        } else {
+            getLogger().info("Could not find Pl3xMap. Skipping hook.");
+        }
     }
 
     @Override
     public void onDisable() {
         Bukkit.getScheduler().cancelTasks(this);
 
-        Pl3xMap.api().getWorldRegistry().forEach(world -> {
-            try {
-                world.getLayerRegistry().unregister(DeathLayer.KEY);
-            } catch (Throwable ignore) {
-            }
-        });
+        if (this.hasHook) {
+            Pl3xMapListener.shutdown();
+        }
     }
 }
